@@ -1,5 +1,6 @@
 # @package _global_
 
+dataset_repo_id: iantc104/gv_sim_insert_peg_3arms
 fps: 25
 
 eval:

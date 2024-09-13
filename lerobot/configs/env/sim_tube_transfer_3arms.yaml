@@ -1,6 +1,6 @@
 # @package _global_
 
-dataset_repo_id: iantc104/gv_sim_sew_needle_3arms
+dataset_repo_id: iantc104/gv_sim_tube_transfer_3arms
 fps: 25
 
 eval:
@@ -10,8 +10,8 @@ eval:
 
 env:
   name: guided_vision
-  task: SewNeedle-3Arms-v0
+  task: TubeTransfer-3Arms-v0
   state_dim: 21
   action_dim: 21
   fps: ${fps}
-  episode_length: 300
+  episode_length: 350
