@@ -51,6 +51,8 @@ from copy import deepcopy
 from datetime import datetime as dt
 from pathlib import Path
 from typing import Callable
+import os
+import re
 
 import einops
 import gymnasium as gym
@@ -359,6 +361,16 @@ def eval_policy(
     for thread in threads:
         thread.join()
 
+    int_max_rewards = [int(r) for r in max_rewards]
+    # Convert to cumulative distribution
+    cumulative_rewards = {}
+    current_sum = 0
+    for i in reversed(range(max(int_max_rewards) + 1)):
+        current_sum += int_max_rewards.count(i)
+        cumulative_rewards[f"reward_{i}"] = current_sum
+    # sort cumulative_rewards by key
+    cumulative_rewards = {k: v for k, v in sorted(cumulative_rewards.items(), key=lambda item: item[0])}
+
     # Compile eval info.
     info = {
         "per_episode": [
@@ -382,6 +394,7 @@ def eval_policy(
         "aggregated": {
             "avg_sum_reward": float(np.nanmean(sum_rewards[:n_episodes])),
             "avg_max_reward": float(np.nanmean(max_rewards[:n_episodes])),
+            "max_reward_counts": cumulative_rewards,
             "pc_success": float(np.nanmean(all_successes[:n_episodes]) * 100),
             "eval_s": time.time() - start,
             "eval_ep_s": (time.time() - start) / n_episodes,
@@ -447,10 +460,11 @@ def main(
     hydra_cfg_path: str | None = None,
     out_dir: str | None = None,
     config_overrides: list[str] | None = None,
+    save_video: str | None = None,
 ):
     assert (pretrained_policy_path is None) ^ (hydra_cfg_path is None)
     if pretrained_policy_path is not None:
-        hydra_cfg = init_hydra_config(str(pretrained_policy_path / "config.yaml"), config_overrides)
+        hydra_cfg = init_hydra_config(os.path.join(pretrained_policy_path, "config.yaml"), config_overrides)
     else:
         hydra_cfg = init_hydra_config(hydra_cfg_path, config_overrides)
 
@@ -494,7 +508,7 @@ def main(
             env,
             policy,
             hydra_cfg.eval.n_episodes,
-            max_episodes_rendered=10,
+            max_episodes_rendered=10 if save_video is not None else 0,
             videos_dir=Path(out_dir) / "videos",
             start_seed=hydra_cfg.seed,
         )
@@ -523,6 +537,7 @@ def get_pretrained_policy_path(pretrained_policy_name_or_path, revision=None):
             )
 
         logging.warning(f"{error_message} Treating it as a local directory.")
+
         pretrained_policy_path = Path(pretrained_policy_name_or_path)
     if not pretrained_policy_path.is_dir() or not pretrained_policy_path.exists():
         raise ValueError(
@@ -555,6 +570,12 @@ if __name__ == "__main__":
             "debugging). This argument is mutually exclusive with `--pretrained-policy-name-or-path` (`-p`)."
         ),
     )
+
+    parser.add_argument(
+        "--save-video",
+        action="store_true",
+        help="If provided, will save a video of the evaluation.",
+    )      
     parser.add_argument("--revision", help="Optionally provide the Hugging Face Hub revision ID.")
     parser.add_argument(
         "--out-dir",
@@ -570,15 +591,46 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    if args.pretrained_policy_name_or_path is None:
-        main(hydra_cfg_path=args.config, out_dir=args.out_dir, config_overrides=args.overrides)
-    else:
-        pretrained_policy_path = get_pretrained_policy_path(
-            args.pretrained_policy_name_or_path, revision=args.revision
-        )
 
-        main(
-            pretrained_policy_path=pretrained_policy_path,
-            out_dir=args.out_dir,
-            config_overrides=args.overrides,
-        )
+    if 'checkpoints' in args.pretrained_policy_name_or_path.split('/')[-1]:
+        # get all folders in directory
+        folders = os.listdir(args.pretrained_policy_name_or_path)
+        checkpoints = []
+
+        # Loop through folders
+        for folder in folders:
+            # Check if the folder name contains any numbers
+            match = re.search(r'\d+', folder)
+            if match:
+                # Extract the first number
+                first_number = int(match.group())
+
+                if first_number > 5000:
+                    checkpoint = args.pretrained_policy_name_or_path + '/' + folder
+                    checkpoints.append(os.path.join(checkpoint, 'pretrained_model'))
+
+                    print(f"Found checkpoint: {checkpoint}")
+
+        for checkpoint in checkpoints:
+            main(
+                pretrained_policy_path=checkpoint,
+                out_dir=args.out_dir,
+                config_overrides=args.overrides,
+                save_video=args.save_video,
+            )
+
+    else:
+
+        if args.pretrained_policy_name_or_path is None:
+            main(hydra_cfg_path=args.config, out_dir=args.out_dir, config_overrides=args.overrides, save_video=args.save_video)
+        else:
+            pretrained_policy_path = get_pretrained_policy_path(
+                args.pretrained_policy_name_or_path, revision=args.revision
+            )
+
+            main(
+                pretrained_policy_path=pretrained_policy_path,
+                out_dir=args.out_dir,
+                config_overrides=args.overrides,
+                save_video=args.save_video,
+            )
