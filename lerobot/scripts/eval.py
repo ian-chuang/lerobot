@@ -605,11 +605,12 @@ if __name__ == "__main__":
                 # Extract the first number
                 first_number = int(match.group())
 
-                if first_number > 5000:
-                    checkpoint = args.pretrained_policy_name_or_path + '/' + folder
-                    checkpoints.append((os.path.join(checkpoint, 'pretrained_model'), folder))
+                checkpoint = args.pretrained_policy_name_or_path + '/' + folder
+                checkpoints.append((os.path.join(checkpoint, 'pretrained_model'), folder, first_number))
 
-                    print(f"Found checkpoint: {checkpoint}")
+        checkpoints = sorted(checkpoints, key=lambda x: x[2], reverse=True)[:10]
+        for checkpoint in checkpoints:
+            print (f"Running evaluation for checkpoint {checkpoint[1]}")
 
         for checkpoint in checkpoints:
             checkpoint_dir = checkpoint[0]
