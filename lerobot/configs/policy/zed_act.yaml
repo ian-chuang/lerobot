@@ -18,6 +18,7 @@ training:
   online_steps: 0
   eval_freq: 500
   save_freq: 500
+  log_freq: 100
   save_checkpoint: true
 
   batch_size: 16
@@ -31,8 +32,8 @@ training:
     action: "[i / ${fps} for i in range(${policy.chunk_size})]"
 
 eval:
-  n_episodes: 50
-  batch_size: 16
+  n_episodes: 10
+  batch_size: 10
 
 # See `configuration_act.py` for more details.
 policy:
@@ -53,7 +54,8 @@ policy:
 
   # Normalization / Unnormalization
   input_normalization_modes:
-    observation.images.top: mean_std
+    observation.images.zed_cam_left: mean_std
+    observation.images.zed_cam_right: mean_std
     observation.state: mean_std
   output_normalization_modes:
     action: mean_std
