@@ -32,8 +32,8 @@ training:
     action: "[i / ${fps} for i in range(${policy.chunk_size})]"
 
 eval:
-  n_episodes: 2
-  batch_size: 2
+  n_episodes: 1
+  batch_size: 1
 
 # See `configuration_act.py` for more details.
 policy:

@@ -1,0 +1,16 @@
+# @package _global_
+
+fps: 25
+
+eval:
+  # `use_async_envs` specifies whether to use asynchronous environments (multiprocessing).
+  # set it to false to avoid some problems of the aloha env
+  use_async_envs: false
+
+env:
+  name: guided_vision
+  task: SewNeedle-2Arms-v0
+  state_dim: 14
+  action_dim: 14
+  fps: ${fps}
+  episode_length: 300
