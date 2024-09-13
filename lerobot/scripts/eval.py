@@ -608,7 +608,7 @@ if __name__ == "__main__":
                 checkpoint = args.pretrained_policy_name_or_path + '/' + folder
                 checkpoints.append((os.path.join(checkpoint, 'pretrained_model'), folder, first_number))
 
-        checkpoints = sorted(checkpoints, key=lambda x: x[2], reverse=True)[:10]
+        checkpoints = sorted(checkpoints, key=lambda x: x[2], reverse=True)[:12]
         for checkpoint in checkpoints:
             print (f"Running evaluation for checkpoint {checkpoint[1]}")
 
