@@ -607,14 +607,18 @@ if __name__ == "__main__":
 
                 if first_number > 5000:
                     checkpoint = args.pretrained_policy_name_or_path + '/' + folder
-                    checkpoints.append(os.path.join(checkpoint, 'pretrained_model'))
+                    checkpoints.append((os.path.join(checkpoint, 'pretrained_model'), folder))
 
                     print(f"Found checkpoint: {checkpoint}")
 
         for checkpoint in checkpoints:
+            checkpoint_dir = checkpoint[0]
+            checkpoint_num = checkpoint[1]
+
+            out_dir = os.path.join(args.out_dir, checkpoint_num)
             main(
-                pretrained_policy_path=checkpoint,
-                out_dir=args.out_dir,
+                pretrained_policy_path=checkpoint_dir,
+                out_dir=out_dir,
                 config_overrides=args.overrides,
                 save_video=args.save_video,
             )
