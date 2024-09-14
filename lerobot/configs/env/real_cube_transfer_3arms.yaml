@@ -1,0 +1,11 @@
+# @package _global_
+
+dataset_repo_id: iantc104/gv_real_cube_transfer
+fps: 50
+
+env:
+  name: real_world
+  task: null
+  state_dim: 21
+  action_dim: 21
+  fps: ${fps}
