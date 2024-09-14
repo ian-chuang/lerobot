@@ -361,7 +361,7 @@ def eval_policy(
     for thread in threads:
         thread.join()
 
-    int_max_rewards = [int(r) for r in max_rewards]
+    int_max_rewards = [int(r) for r in max_rewards[:n_episodes]]
     # Convert to cumulative distribution
     cumulative_rewards = {}
     current_sum = 0
