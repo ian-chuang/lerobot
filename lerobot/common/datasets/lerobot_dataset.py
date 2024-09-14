@@ -34,6 +34,7 @@ from lerobot.common.datasets.utils import (
     reset_episode_index,
 )
 from lerobot.common.datasets.video_utils import VideoFrame, load_from_videos
+import torchvision.transforms as v2
 
 # For maintainers, see lerobot/common/datasets/push_dataset_to_hub/CODEBASE_VERSION.md
 CODEBASE_VERSION = "v1.6"
@@ -70,6 +71,11 @@ class LeRobotDataset(torch.utils.data.Dataset):
         if self.video:
             self.videos_dir = load_videos(repo_id, CODEBASE_VERSION, root)
             self.video_backend = video_backend if video_backend is not None else "pyav"
+
+
+
+        #HACK
+        self.resize = v2.Resize((480, 640))
 
     @property
     def fps(self) -> int:
@@ -152,6 +158,10 @@ class LeRobotDataset(torch.utils.data.Dataset):
                 self.tolerance_s,
                 self.video_backend,
             )
+
+        # resive with v2.Resize(resize)
+        for cam in self.camera_keys:
+            item[cam] = self.resize(item[cam])
 
         if self.image_transforms is not None:
             for cam in self.camera_keys:
