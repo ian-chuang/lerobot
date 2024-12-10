@@ -1,0 +1,3 @@
+# white list env folder
+!env
+!*.yaml

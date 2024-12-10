@@ -30,7 +30,7 @@ def make_env(cfg: DictConfig, n_envs: int | None = None) -> gym.vector.VectorEnv
     if cfg.env.name == "real_world":
         return
 
-    package_name = f"gym_{cfg.env.name}"
+    package_name = f"{cfg.env.name}"
 
     try:
         importlib.import_module(package_name)

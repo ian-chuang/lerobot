@@ -1,0 +1,13 @@
+# @package _global_
+
+fps: 50
+
+env:
+  name: rpl
+  task: PegInHoleEnv-v0
+  state_dim: 16
+  action_dim: 10
+  fps: ${fps}
+  episode_length: 300
+  gym:
+    render_mode: rgb_array
