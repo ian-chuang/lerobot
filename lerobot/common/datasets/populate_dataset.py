@@ -344,6 +344,9 @@ def save_current_episode(dataset):
 
 
 def encode_videos(dataset, image_keys, play_sounds):
+
+    print("Encoding videos")
+
     log_say("Encoding videos", play_sounds)
 
     num_episodes = dataset["num_episodes"]
@@ -358,7 +361,7 @@ def encode_videos(dataset, image_keys, play_sounds):
             tmp_imgs_dir = videos_dir / f"{key}_episode_{episode_index:06d}"
             fname = f"{key}_episode_{episode_index:06d}.mp4"
             video_path = local_dir / "videos" / fname
-            if video_path.exists():
+            if video_path.exists() and not tmp_imgs_dir.exists():
                 # Skip if video is already encoded. Could be the case when resuming data recording.
                 continue
             # note: `encode_video_frames` is a blocking call. Making it asynchronous shouldn't speedup encoding,
