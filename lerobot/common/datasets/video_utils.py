@@ -206,7 +206,7 @@ def encode_video_frames(
     if overwrite:
         ffmpeg_args.append("-y")
 
-    ffmpeg_cmd = ["ffmpeg"] + ffmpeg_args + [str(video_path)]
+    ffmpeg_cmd = ["/usr/bin/ffmpeg"] + ffmpeg_args + [str(video_path)]
     # redirect stdin to subprocess.DEVNULL to prevent reading random keyboard inputs from terminal
     subprocess.run(ffmpeg_cmd, check=True, stdin=subprocess.DEVNULL)
 
