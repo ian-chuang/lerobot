@@ -11,6 +11,7 @@ from pathlib import Path
 import torch
 import tqdm
 from PIL import Image
+import numpy as np
 
 from lerobot.common.datasets.compute_stats import compute_stats
 from lerobot.common.datasets.lerobot_dataset import CODEBASE_VERSION, LeRobotDataset
@@ -48,7 +49,17 @@ def safe_stop_image_writer(func):
 
 
 def save_image(img_tensor, key, frame_index, episode_index, videos_dir: str):
-    img = Image.fromarray(img_tensor.numpy())
+
+    if isinstance(img_tensor, torch.Tensor):
+        img = Image.fromarray(img_tensor.numpy())
+    elif isinstance(img_tensor, Image.Image):
+        img = img_tensor
+    elif isinstance(img_tensor, np.ndarray):
+        img = Image.fromarray(img_tensor)
+    else:
+        print("WARNING: Unsupported type for img_tensor")
+        raise ValueError(f"Unsupported type for {img_tensor=}")
+
     path = Path(videos_dir) / f"{key}_episode_{episode_index:06d}" / f"frame_{frame_index:06d}.png"
     path.parent.mkdir(parents=True, exist_ok=True)
     img.save(str(path), quality=100)
