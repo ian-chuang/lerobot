@@ -318,7 +318,8 @@ def delete_current_episode(dataset):
     episode_index = dataset["num_episodes"]
     videos_dir = dataset["videos_dir"]
     for tmp_imgs_dir in videos_dir.glob(f"*_episode_{episode_index:06d}"):
-        shutil.rmtree(tmp_imgs_dir)
+        # allow removing directory even if it is not empty
+        shutil.rmtree(tmp_imgs_dir, ignore_errors=True)
 
 
 def save_current_episode(dataset):
