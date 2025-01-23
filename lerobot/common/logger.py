@@ -239,8 +239,8 @@ class Logger:
                     continue
                 self._wandb.log({f"{mode}/{k}": v}, step=step)
 
-    def log_video(self, video_path: str, step: int, mode: str = "train"):
+    def log_video(self, video_path: str, step: int, mode: str = "train", prefix=""):
         assert mode in {"train", "eval"}
         assert self._wandb is not None
         wandb_video = self._wandb.Video(video_path, fps=self._cfg.fps, format="mp4")
-        self._wandb.log({f"{mode}/video": wandb_video}, step=step)
+        self._wandb.log({f"{mode}/{prefix}video": wandb_video}, step=step)
