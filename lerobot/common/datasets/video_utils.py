@@ -26,6 +26,9 @@ import torch
 import torchvision
 from datasets.features.features import register_feature
 
+# Import torchvision transforms
+from torchvision import transforms
+
 
 def load_from_videos(
     item: dict[str, torch.Tensor],
@@ -33,6 +36,7 @@ def load_from_videos(
     videos_dir: Path,
     tolerance_s: float,
     backend: str = "pyav",
+    image_shapes: dict[str, tuple[int, int, int]] = None,
 ):
     """Note: When using data workers (e.g. DataLoader with num_workers>0), do not call this function
     in the main process (e.g. by using a second Dataloader with num_workers=0). It will result in a Segmentation Fault.
@@ -52,6 +56,11 @@ def load_from_videos(
             video_path = data_dir / paths[0]
 
             frames = decode_video_frames_torchvision(video_path, timestamps, tolerance_s, backend)
+
+            if image_shapes is not None and  key in image_shapes:
+                res = image_shapes[key][1:]
+                frames = transforms.Resize(res)(frames)
+
             item[key] = frames
         else:
             # load one frame
@@ -59,6 +68,11 @@ def load_from_videos(
             video_path = data_dir / item[key]["path"]
 
             frames = decode_video_frames_torchvision(video_path, timestamps, tolerance_s, backend)
+
+            if image_shapes is not None and key in image_shapes:
+                res = image_shapes[key][1:]
+                frames = transforms.Resize(res)(frames)
+
             item[key] = frames[0]
 
     return item

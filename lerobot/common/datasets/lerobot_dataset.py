@@ -49,6 +49,7 @@ class LeRobotDataset(torch.utils.data.Dataset):
         image_transforms: Callable | None = None,
         delta_timestamps: dict[list[float]] | None = None,
         video_backend: str | None = None,
+        image_shapes: dict[str, tuple[int, int, int]] | None = None,
     ):
         super().__init__()
         self.repo_id = repo_id
@@ -56,6 +57,7 @@ class LeRobotDataset(torch.utils.data.Dataset):
         self.split = split
         self.image_transforms = image_transforms
         self.delta_timestamps = delta_timestamps
+        self.image_shapes = image_shapes
         # load data from hub or locally when root is provided
         # TODO(rcadene, aliberts): implement faster transfer
         # https://huggingface.co/docs/huggingface_hub/en/guides/download#faster-downloads
@@ -94,6 +96,11 @@ class LeRobotDataset(torch.utils.data.Dataset):
         for key, feats in self.hf_dataset.features.items():
             if isinstance(feats, (datasets.Image, VideoFrame)):
                 keys.append(key)
+
+        # filter to only include the keys that are in the image_keys
+        if self.image_shapes is not None:
+            video_frame_keys = [k for k in video_frame_keys if k in self.image_shapes]
+
         return keys
 
     @property
@@ -108,6 +115,11 @@ class LeRobotDataset(torch.utils.data.Dataset):
         for key, feats in self.hf_dataset.features.items():
             if isinstance(feats, VideoFrame):
                 video_frame_keys.append(key)
+
+        # filter to only include the keys that are in the image_keys
+        if self.image_shapes is not None:
+            video_frame_keys = [k for k in video_frame_keys if k in self.image_shapes]
+
         return video_frame_keys
 
     @property
@@ -144,6 +156,9 @@ class LeRobotDataset(torch.utils.data.Dataset):
                 self.tolerance_s,
             )
 
+        if self.image_shapes is not None:
+            item = {k: v for k, v in item.items() if "image" not in k or k in self.image_shapes}
+
         if self.video:
             item = load_from_videos(
                 item,
@@ -151,6 +166,7 @@ class LeRobotDataset(torch.utils.data.Dataset):
                 self.videos_dir,
                 self.tolerance_s,
                 self.video_backend,
+                self.image_shapes,
             )
 
         if self.image_transforms is not None:
