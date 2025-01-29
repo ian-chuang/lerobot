@@ -98,7 +98,7 @@ class LeRobotDataset(torch.utils.data.Dataset):
                 keys.append(key)
 
         # filter to only include the keys that are in the image_keys
-        if self.image_shapes is not None:
+        if hasattr(self, "image_shapes") and self.image_shapes is not None:
             video_frame_keys = [k for k in video_frame_keys if k in self.image_shapes]
 
         return keys
@@ -117,7 +117,7 @@ class LeRobotDataset(torch.utils.data.Dataset):
                 video_frame_keys.append(key)
 
         # filter to only include the keys that are in the image_keys
-        if self.image_shapes is not None:
+        if hasattr(self, "image_shapes") and self.image_shapes is not None:
             video_frame_keys = [k for k in video_frame_keys if k in self.image_shapes]
 
         return video_frame_keys
@@ -156,7 +156,7 @@ class LeRobotDataset(torch.utils.data.Dataset):
                 self.tolerance_s,
             )
 
-        if self.image_shapes is not None:
+        if hasattr(self, "image_shapes") and self.image_shapes is not None:
             item = {k: v for k, v in item.items() if "image" not in k or k in self.image_shapes}
 
         if self.video:
@@ -166,7 +166,7 @@ class LeRobotDataset(torch.utils.data.Dataset):
                 self.videos_dir,
                 self.tolerance_s,
                 self.video_backend,
-                self.image_shapes,
+                self.image_shapes if hasattr(self, "image_shapes") else None,
             )
 
         if self.image_transforms is not None:
