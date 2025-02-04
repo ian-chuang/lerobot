@@ -36,7 +36,7 @@ def resolve_delta_timestamps(cfg):
                 cfg.training.delta_timestamps[key] = eval(delta_timestamps[key])
 
 
-def make_dataset(cfg, split: str = "train") -> LeRobotDataset | MultiLeRobotDataset:
+def make_dataset(cfg, split: str = "train", **kwargs) -> LeRobotDataset | MultiLeRobotDataset:
     """
     Args:
         cfg: A Hydra config as per the LeRobot config scheme.
@@ -97,6 +97,7 @@ def make_dataset(cfg, split: str = "train") -> LeRobotDataset | MultiLeRobotData
             delta_timestamps=cfg.training.get("delta_timestamps"),
             image_transforms=image_transforms,
             video_backend=cfg.video_backend,
+            **kwargs,
         )
     else:
         dataset = MultiLeRobotDataset(
