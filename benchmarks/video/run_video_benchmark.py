@@ -35,12 +35,13 @@ import torch
 from skimage.metrics import mean_squared_error, peak_signal_noise_ratio, structural_similarity
 from tqdm import tqdm
 
-from lerobot.common.datasets.lerobot_dataset import LeRobotDataset
-from lerobot.common.datasets.video_utils import (
+from benchmarks.video.benchmark import TimeBenchmark
+from lerobot.datasets.lerobot_dataset import LeRobotDataset
+from lerobot.datasets.video_utils import (
     decode_video_frames_torchvision,
     encode_video_frames,
 )
-from lerobot.common.utils.benchmark import TimeBenchmark
+from lerobot.utils.constants import OBS_IMAGE
 
 BASE_ENCODING = OrderedDict(
     [
@@ -108,7 +109,8 @@ def save_decoded_frames(
 
 
 def save_first_episode(imgs_dir: Path, dataset: LeRobotDataset) -> None:
-    ep_num_images = dataset.episode_data_index["to"][0].item()
+    episode_index = 0
+    ep_num_images = dataset.meta.episodes["length"][episode_index]
     if imgs_dir.exists() and len(list(imgs_dir.glob("frame_*.png"))) == ep_num_images:
         return
 
@@ -116,7 +118,7 @@ def save_first_episode(imgs_dir: Path, dataset: LeRobotDataset) -> None:
     hf_dataset = dataset.hf_dataset.with_format(None)
 
     # We only save images from the first camera
-    img_keys = [key for key in hf_dataset.features if key.startswith("observation.image")]
+    img_keys = [key for key in hf_dataset.features if key.startswith(OBS_IMAGE)]
     imgs_dataset = hf_dataset.select_columns(img_keys[0])
 
     for i, item in enumerate(
@@ -265,7 +267,8 @@ def benchmark_encoding_decoding(
             overwrite=True,
         )
 
-    ep_num_images = dataset.episode_data_index["to"][0].item()
+    episode_index = 0
+    ep_num_images = dataset.meta.episodes["length"][episode_index]
     width, height = tuple(dataset[0][dataset.meta.camera_keys[0]].shape[-2:])
     num_pixels = width * height
     video_size_bytes = video_path.stat().st_size
@@ -416,7 +419,7 @@ if __name__ == "__main__":
         "--vcodec",
         type=str,
         nargs="*",
-        default=["libx264", "libx265", "libsvtav1"],
+        default=["libx264", "hevc", "libsvtav1"],
         help="Video codecs to be tested",
     )
     parser.add_argument(
@@ -446,7 +449,7 @@ if __name__ == "__main__":
     #     nargs="*",
     #     default=[0, 1],
     #     help="Use the fastdecode tuning option. 0 disables it. "
-    #         "For libx264 and libx265, only 1 is possible. "
+    #         "For libx264 and libx265/hevc, only 1 is possible. "
     #         "For libsvtav1, 1, 2 or 3 are possible values with a higher number meaning a faster decoding optimization",
     # )
     parser.add_argument(

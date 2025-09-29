@@ -21,8 +21,8 @@ import torch
 from gymnasium.utils.env_checker import check_env
 
 import lerobot
-from lerobot.common.envs.factory import make_env, make_env_config
-from lerobot.common.envs.utils import preprocess_observation
+from lerobot.envs.factory import make_env, make_env_config
+from lerobot.envs.utils import preprocess_observation
 from tests.utils import require_env
 
 OBS_TYPES = ["state", "pixels", "pixels_agent_pos"]
@@ -46,7 +46,10 @@ def test_env(env_name, env_task, obs_type):
 @require_env
 def test_factory(env_name):
     cfg = make_env_config(env_name)
-    env = make_env(cfg, n_envs=1)
+    envs = make_env(cfg, n_envs=1)
+    suite_name = next(iter(envs))
+    task_id = next(iter(envs[suite_name]))
+    env = envs[suite_name][task_id]
     obs, _ = env.reset()
     obs = preprocess_observation(obs)
 
